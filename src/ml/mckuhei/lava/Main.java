@@ -45,7 +45,7 @@ public class Main extends JavaPlugin implements Listener {
 						//world.getBlockAt(x, y, z).setType(Material.LAVA);
 						Block block = world.getBlockAt(x, y, z);
 						Material type = block.getType();
-						if(type == Material.AIR || type == Material.WATER) 
+						if(type == Material.AIR || type == Material.WATER || (!type.isSolid() && type != Material.CHEST)) 
 							block.setType(Material.LAVA);
 					}
 				center = center.add(0, 1, 0);
@@ -132,6 +132,7 @@ public class Main extends JavaPlugin implements Listener {
 			}
 			if(!sender.isOp()) {
 				sender.sendMessage(ChatColor.RED+"你需要op来执行这命令");
+				return true;
 			}
 			switch(args[0]) {
 			case "init": {
