@@ -1,0 +1,9 @@
+name: LavaIsGoingUp
+main: ml.mckuhei.lava.Main
+version: 1
+commands:
+   lava:
+      description: This is a demo command.
+      usage: /lava
+      permission: null
+      permission-message: You don't have permission.
