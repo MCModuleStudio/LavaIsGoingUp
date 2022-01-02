@@ -1,5 +1,6 @@
 package ml.mckuhei.lava;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
@@ -30,6 +32,38 @@ public class Main extends JavaPlugin implements Listener {
 	private Location center;
 	private int size = 64;
 	private int delay = 15*20,counter;
+	private static final List<Material> blackList = new ArrayList<>();
+	
+	static {
+		Field[] fields = Material.class.getDeclaredFields();
+		for(Field field : fields) {
+			if(field.getName().contains("DOOR")||field.getName().contains("FENCE")||field.getName().contains("SIGN")||field.getName().contains("PRESSURE_PLATE")) {
+				try {
+					blackList.add((Material) field.get(null));
+				} catch (IllegalArgumentException | IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		blackList.add(Material.GLASS_PANE);
+	}
+	
+	private void setLava(World world, int x, int y, int z) {
+		//world.getBlockAt(x, y, z).setType(Material.LAVA);
+		Block block = world.getBlockAt(x, y, z);
+		Material type = block.getType();
+		if(shouldReplace(type)) 
+			block.setType(Material.LAVA);
+	}
+	
+	private boolean shouldReplace(Material type) {
+		boolean bool = type == Material.AIR || type == Material.WATER || (!type.isSolid() && type != Material.CHEST);
+		
+		if(!bool)
+			bool = blackList.contains(type);
+		return bool;
+	}
 	
 	public void onEnable() {
 		getServer().getPluginManager().registerEvents(this, this);
@@ -41,14 +75,9 @@ public class Main extends JavaPlugin implements Listener {
 				int y = center.getBlockY();
 				World world = center.getWorld();
 				for(int x = xCenter - size; x < xCenter + size;x++)
-					for(int z = zCenter - size; z < zCenter + size;z++) {
-						//world.getBlockAt(x, y, z).setType(Material.LAVA);
-						Block block = world.getBlockAt(x, y, z);
-						Material type = block.getType();
-						if(type == Material.AIR || type == Material.WATER || (!type.isSolid() && type != Material.CHEST)) 
-							block.setType(Material.LAVA);
-					}
-				center = center.add(0, 1, 0);
+					for(int z = zCenter - size; z < zCenter + size;z++)
+						setLava(world, x, y, z);
+				center.add(0, 1, 0);
 				counter = delay;
 				List<Player> players = world.getPlayers();
 				boolean win = y >= world.getMaxHeight();
@@ -65,6 +94,19 @@ public class Main extends JavaPlugin implements Listener {
 					stop();
 			}
 		},0,1);
+		Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+			if(!started)
+				return;
+			int xCenter = center.getBlockX(), yCenter = center.getBlockY(), zCenter = center.getBlockZ();
+			World world = center.getWorld();
+			for(int x = xCenter - size; x < xCenter + size;x++)
+				for(int z = zCenter - size; z < zCenter + size;z++)
+					for(int y = 0; y < yCenter; y++) {
+						if(!started)
+							return;
+						setLava(world, x, y, z);
+					}
+		},0,10*60*20);
 	}
 	
 	public void onDisable() {
@@ -81,14 +123,14 @@ public class Main extends JavaPlugin implements Listener {
 		List<Player> players = world.getPlayers();
 		Random rand = new Random();
 		for(Player player : players) {
-			int xOff = rand.nextInt(size / 2), zOff = rand.nextInt(size / 2);
+			int xOff = rand.nextInt(size), zOff = rand.nextInt(size);
 			if(rand.nextBoolean()) {
 				xOff *= -1;
 			}
 			if(rand.nextBoolean()) {
 				zOff *= -1;
 			}
-			Location loc = center.add(xOff + .5, 0, zOff + .5);
+			Location loc = center.clone().add(xOff + .5, 0, zOff + .5);
 			loc.setY(world.getHighestBlockYAt(loc)+1);
 			player.teleport(loc);
 			player.setGameMode(GameMode.SURVIVAL);
