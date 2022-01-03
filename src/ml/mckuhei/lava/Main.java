@@ -37,7 +37,7 @@ public class Main extends JavaPlugin implements Listener {
 	static {
 		Field[] fields = Material.class.getDeclaredFields();
 		for(Field field : fields) {
-			if(field.getName().contains("DOOR")||field.getName().contains("FENCE")||field.getName().contains("SIGN")||field.getName().contains("PRESSURE_PLATE")) {
+			if(field.getName().contains("DOOR")||field.getName().contains("FENCE")||field.getName().contains("SIGN")||field.getName().contains("PRESSURE_PLATE")||field.getName().contains("GLASS")) {
 				try {
 					blackList.add((Material) field.get(null));
 				} catch (IllegalArgumentException | IllegalAccessException e) {
@@ -46,7 +46,6 @@ public class Main extends JavaPlugin implements Listener {
 				}
 			}
 		}
-		blackList.add(Material.GLASS_PANE);
 	}
 	
 	private void setLava(World world, int x, int y, int z) {
@@ -115,10 +114,11 @@ public class Main extends JavaPlugin implements Listener {
 	
 	public void init(Location center) {
 		Objects.requireNonNull(center).setY(1);
+		center = new Location(center.getWorld() ,center.getBlockX(), center.getBlockY(), center.getBlockZ());
 		this.center = center.clone();
 		World world = center.getWorld();
 		WorldBorder border = world.getWorldBorder();
-		border.setCenter(center.toBlockLocation());
+		border.setCenter(center);
 		border.setSize(size * 2);
 		List<Player> players = world.getPlayers();
 		Random rand = new Random();
