@@ -81,10 +81,10 @@ public class Main extends JavaPlugin implements Listener {
 				List<Player> players = world.getPlayers();
 				boolean win = y >= world.getMaxHeight();
 				for(Player player : players) {
-					player.sendMessage(win ? "¹§Ï²£¡ÄúÓ®ÁË£¡" : String.format("ÑÒ½¬¸ß¶È: %d", y));
+					player.sendMessage(win ? "æ­å–œï¼æ‚¨èµ¢äº†ï¼" : String.format("å²©æµ†é«˜åº¦: %d", y));
 					double playerY = player.getLocation().getBlockY();
 					if(playerY==y+1&&!win) {
-						player.sendMessage("Äã¸Ğ¾õµ½µØ°åÓĞµãÌÌ½Å...");
+						player.sendMessage("ä½ æ„Ÿè§‰åˆ°åœ°æ¿æœ‰ç‚¹çƒ«è„š...");
 					}
 					if(win)
 						player.setGameMode(GameMode.SPECTATOR);
@@ -93,19 +93,6 @@ public class Main extends JavaPlugin implements Listener {
 					stop();
 			}
 		},0,1);
-		Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
-			if(!started)
-				return;
-			int xCenter = center.getBlockX(), yCenter = center.getBlockY(), zCenter = center.getBlockZ();
-			World world = center.getWorld();
-			for(int x = xCenter - size; x < xCenter + size;x++)
-				for(int z = zCenter - size; z < zCenter + size;z++)
-					for(int y = 0; y < yCenter; y++) {
-						if(!started)
-							return;
-						setLava(world, x, y, z);
-					}
-		},0,10*60*20);
 	}
 	
 	public void onDisable() {
@@ -139,7 +126,7 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	public void start() {
 		if(this.center == null) {
-			throw new RuntimeException("Î´³õÊ¼»¯");
+			throw new RuntimeException("æœªåˆå§‹åŒ–");
 		}
 		this.started = true;
 		this.counter = this.delay;
@@ -162,58 +149,58 @@ public class Main extends JavaPlugin implements Listener {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if(cmd.getName().equals("lava")) {
 			if(args.length==0) {
-				sender.sendMessage("============ÑÒ½¬ÉÏÉı============");
-				sender.sendMessage("×÷Õß:Minecraftku_hei");
-				sender.sendMessage("/lava init              - ³õÊ¼»¯");
-				sender.sendMessage("/lava start           - Æô¶¯");
-				sender.sendMessage("/lava pause          - ÔİÍ£");
-				sender.sendMessage("/lava stop            - Í£Ö¹");
-				sender.sendMessage("/lava delay <tick>   - ÑÒ½¬ÉÏÉı¼ä¸ô");
-				sender.sendMessage("/lava size <·½¿é>    - ÉèÖÃ´óĞ¡");
+				sender.sendMessage("============å²©æµ†ä¸Šå‡============");
+				sender.sendMessage("ä½œè€…:Minecraftku_hei");
+				sender.sendMessage("/lava init              - åˆå§‹åŒ–");
+				sender.sendMessage("/lava start           - å¯åŠ¨");
+				sender.sendMessage("/lava pause          - æš‚åœ");
+				sender.sendMessage("/lava stop            - åœæ­¢");
+				sender.sendMessage("/lava delay <tick>   - å²©æµ†ä¸Šå‡é—´éš”");
+				sender.sendMessage("/lava size <æ–¹å—>    - è®¾ç½®å¤§å°");
 				return true;
 			}
 			if(!sender.isOp()) {
-				sender.sendMessage(ChatColor.RED+"ÄãĞèÒªopÀ´Ö´ĞĞÕâÃüÁî");
+				sender.sendMessage(ChatColor.RED+"ä½ éœ€è¦opæ¥æ‰§è¡Œè¿™å‘½ä»¤");
 				return true;
 			}
 			switch(args[0]) {
 			case "init": {
 				if(!(sender instanceof Player)) {
-					sender.sendMessage("Äã²»ÊÇÈË");
+					sender.sendMessage("ä½ ä¸æ˜¯äºº");
 					break;
 				}
 				init(((Player)sender).getLocation());
-				sender.sendMessage("³õÊ¼»¯³É¹¦");
+				sender.sendMessage("åˆå§‹åŒ–æˆåŠŸ");
 				break;
 			}
 			case "start": {
 				try {
 					start();
 				} catch(RuntimeException e) {
-					sender.sendMessage(ChatColor.RED+"Æô¶¯Ê§°Ü£¡Ô­Òò:"+e.getMessage());
+					sender.sendMessage(ChatColor.RED+"å¯åŠ¨å¤±è´¥ï¼åŸå› :"+e.getMessage());
 					break;
 				}
-				sender.sendMessage("ÒÑÆô¶¯");
+				sender.sendMessage("å·²å¯åŠ¨");
 				break;
 			}
 			case "pause": {
 				pause();
-				sender.sendMessage("ÒÑÔİÍ£");
+				sender.sendMessage("å·²æš‚åœ");
 				break;
 			}
 			case "stop": {
 				stop();
-				sender.sendMessage("ÒÑÍ£Ö¹");
+				sender.sendMessage("å·²åœæ­¢");
 				break;
 			}
 			case "delay": {
 				delay = Integer.valueOf(args[1]);
-				sender.sendMessage("ÉèÖÃ³É¹¦");
+				sender.sendMessage("è®¾ç½®æˆåŠŸ");
 				break;
 			}
 			case "size": {
 				size = Integer.valueOf(args[1]);
-				sender.sendMessage("ÉèÖÃ³É¹¦");
+				sender.sendMessage("è®¾ç½®æˆåŠŸ");
 				break;
 			}
 			}
@@ -241,7 +228,7 @@ public class Main extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onPlayerDead(PlayerDeathEvent event) {
-		event.getEntity().sendMessage("ÄãËÀÁË£¡");
+		event.getEntity().sendMessage("ä½ æ­»äº†ï¼");
 		event.getEntity().setHealth(20);
 		event.getEntity().setFoodLevel(20);
 		event.getEntity().setGameMode(GameMode.SPECTATOR);
@@ -251,7 +238,7 @@ public class Main extends JavaPlugin implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		if(center != null) {
 			event.getPlayer().setGameMode(GameMode.SPECTATOR);
-			event.getPlayer().sendMessage(ChatColor.RED+"ÓÎÏ·ÒÑ¿ªÊ¼£¬Èç¹ûÄãÊÇÖĞÍ¾µôÏß»òÕßÓÎÏ·¸Õ¿ªÊ¼£¬ÇëÕÒ¹ÜÀíÔ±½«ÄãµÄÓÎÏ·Ä£Ê½¸Ä»ØÉú´æ£¡");
+			event.getPlayer().sendMessage(ChatColor.RED+"æ¸¸æˆå·²å¼€å§‹ï¼Œå¦‚æœä½ æ˜¯ä¸­é€”æ‰çº¿æˆ–è€…æ¸¸æˆåˆšå¼€å§‹ï¼Œè¯·æ‰¾ç®¡ç†å‘˜å°†ä½ çš„æ¸¸æˆæ¨¡å¼æ”¹å›ç”Ÿå­˜ï¼");
 			event.getPlayer().teleport(center);
 		}
 	}
