@@ -84,6 +84,10 @@ public class Main extends JavaPlugin implements Listener {
 		List<Player> players = world.getPlayers();
 		int y = center.getBlockY();
 		if(counter-- < 0) {
+			if(y % 32 == 0) {
+				this.voteManager = new VoteManager(world);
+				this.voteCounter = VOTE_DELAY;
+			}
 			int xCenter = center.getBlockX(), zCenter = center.getBlockZ();
 			for(int x = xCenter - size; x < xCenter + size; x++)
 				for(int z = zCenter - size; z < zCenter + size; z++)
@@ -108,10 +112,6 @@ public class Main extends JavaPlugin implements Listener {
 			}
 			if(win)
 				stop();
-		}
-		if(y % 64 == 0) {
-			this.voteManager = new VoteManager(world);
-			this.voteCounter = VOTE_DELAY;
 		}
 		if(this.voteManager != null) {
 			if(this.voteCounter-- < 0) {
@@ -201,6 +201,7 @@ public class Main extends JavaPlugin implements Listener {
 			border.setSize(Integer.MAX_VALUE);
 		}
 		this.center = null;
+		this.voteManager = null;
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {

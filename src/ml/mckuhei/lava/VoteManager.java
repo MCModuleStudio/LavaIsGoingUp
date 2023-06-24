@@ -18,7 +18,7 @@ public class VoteManager {
 
 	public VoteStatus getVoteStatus() {
 		VoteStatus status = VoteStatus.PENDING;
-		int voted = VoteStatus.PENDING.votedPlayer.size();
+		int voted = 0;
 		for(VoteStatus s : VoteStatus.values()) {
 			int i = s.votedPlayer.size();
 			if(i > voted) {
