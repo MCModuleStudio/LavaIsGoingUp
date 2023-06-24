@@ -84,7 +84,7 @@ public class Main extends JavaPlugin implements Listener {
 		List<Player> players = world.getPlayers();
 		int y = center.getBlockY();
 		if(counter-- < 0) {
-			if(y % 32 == 0) {
+			if(y % 64 == 0) {
 				this.voteManager = new VoteManager(world);
 				this.voteCounter = VOTE_DELAY;
 			}
