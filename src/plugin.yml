@@ -7,3 +7,8 @@ commands:
       usage: /lava
       permission: null
       permission-message: You don't have permission.
+   vote:
+      description: This is a demo command.
+      usage: /vote
+      permission: null
+      permission-message: You don't have permission.
