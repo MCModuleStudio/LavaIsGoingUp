@@ -7,23 +7,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.WorldBorder;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerResourcePackStatusEvent.Status;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import ml.mckuhei.lava.VoteManager.VoteStatus;
@@ -32,6 +26,9 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.md_5.bungee.api.chat.ComponentBuilder;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.github.paperspigot.Title;
 
 public class Main extends JavaPlugin implements Listener {
 	private static final int DEFAULT_DELAY = 30 * 20,
@@ -42,7 +39,7 @@ public class Main extends JavaPlugin implements Listener {
 	private int size = 64;
 	private int delay = DEFAULT_DELAY, counter, voteCounter;
 	private VoteManager voteManager;
-	
+
 	static {
 		Field[] fields = Material.class.getDeclaredFields();
 		for(Field field : fields) {
@@ -98,20 +95,23 @@ public class Main extends JavaPlugin implements Listener {
 			boolean win = y >= world.getMaxHeight();
 			for(Player player : players) {
 				boolean specatorMode = player.getGameMode() == GameMode.SPECTATOR;
-				player.sendMessage(win && !specatorMode ? "恭喜！您赢了！" : String.format("岩浆高度: %d", y));
+				player.sendMessage(win && !specatorMode ? ChatColor.RED + "Death Match将于30秒后开始，请在30秒内到达" + world.getMaxHeight() + "层上方！" : String.format(ChatColor.YELLOW + "岩浆高度: %d", y));
 				if(y == 63) {
-					player.sendMessage("PVP已启用");
+					player.playSound(player.getLocation(), Sound.ENDERDRAGON_GROWL, 1, 1); // 播放海像素同款高级音效
+					Title title = new Title(ChatColor.RED + "PVP已开启!",ChatColor.GOLD + "现在可以攻击其他玩家！",20,50,20);
+					player.sendTitle(title);
 				}
 				if(specatorMode) continue;
 				int playerY = player.getLocation().getBlockY();
 				if(playerY == y + 1 && !win) {
-					player.sendMessage("你感觉到地板有点烫脚...");
+					player.sendMessage(ChatColor.RED + "你感觉到地板有点烫脚...");
 				}
 				if(win)
 					player.setGameMode(GameMode.SPECTATOR);
 			}
-			if(win)
+			if(win) {
 				stop();
+			}
 		}
 		if(this.voteManager != null) {
 			if(this.voteCounter-- < 0) {
@@ -124,6 +124,14 @@ public class Main extends JavaPlugin implements Listener {
 					this.voteCounter = VOTE_DELAY;
 				}
 			}
+		}
+	}
+
+	@EventHandler
+	public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
+		Player player = event.getPlayer();
+		if (event.getItem().getType() == Material.GOLDEN_APPLE) {
+			player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 15, 1));
 		}
 	}
 	
@@ -145,10 +153,10 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	private void sendVoteToPlayer(Player player) {
-		player.sendMessage(String.format("是否将岩浆上升间隔设置为%d？", delay / 2));
+		player.sendMessage(String.format(ChatColor.GOLD + "是否将岩浆上升间隔设置为%d？", delay / 2));
 		player.sendMessage(
 				new ComponentBuilder("[同意]").color(ChatColor.GREEN).event(new ClickEvent(Action.RUN_COMMAND, "/lavaisgoingup:vote accept")).append(" ").reset()
-				             .append("[拒绝]").color(ChatColor.RED  ).event(new ClickEvent(Action.RUN_COMMAND, "/lavaisgoingup:vote reject")).create()
+				             .append("[拒绝]").color(ChatColor.RED).event(new ClickEvent(Action.RUN_COMMAND, "/lavaisgoingup:vote reject")).create()
 				);
 	}
 	
@@ -187,6 +195,7 @@ public class Main extends JavaPlugin implements Listener {
 		}
 		this.started = true;
 		this.counter = this.delay = DEFAULT_DELAY;
+
 	}
 	
 	public void pause() {
@@ -312,7 +321,16 @@ public class Main extends JavaPlugin implements Listener {
 	@EventHandler
 	public void onPlayerDead(PlayerDeathEvent event) {
 		onPlayerDead(event.getEntity());
+		Player player = event.getEntity();
+		Player killerEntity = player.getKiller();
+
+		if(killerEntity != null){
+			ItemStack goldenApple = new ItemStack(Material.GOLDEN_APPLE, 1);
+			killerEntity.getInventory().addItem(goldenApple);
+			killerEntity.sendMessage(ChatColor.GOLD + "你因为击杀" + player.getName() + "获得了一个金苹果！");
+		}
 	}
+
 	
 //	@EventHandler
 //	public void onEntityDamanged(EntityDamageEvent event) {
@@ -322,7 +340,8 @@ public class Main extends JavaPlugin implements Listener {
 //	}
 	
 	public void onPlayerDead(Player player) {
-		player.sendMessage("你死了！");
+		player.getWorld().strikeLightningEffect(player.getLocation());
+		player.sendTitle(new Title(ChatColor.RED + "你似了!", ChatColor.GOLD + "你将无法重生，现在为旁观者"));
 		player.setHealth(20);
 		player.setFoodLevel(20);
 		player.setGameMode(GameMode.SPECTATOR);
