@@ -1,5 +1,6 @@
 package ml.mckuhei.lava.kit;
 
+import ml.mckuhei.lava.kit.kits.Speed;
 import ml.mckuhei.lava.kit.kits.SpeedMine;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,6 +27,7 @@ public class KitManager implements Listener {
         playerKits = new ConcurrentHashMap<>();
 
         regKit(new SpeedMine());
+        regKit(new Speed());
 
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
