@@ -1,12 +1,12 @@
 package ml.mckuhei.lava;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
-
+import ml.mckuhei.lava.VoteManager.VoteStatus;
+import ml.mckuhei.lava.kit.KitManager;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -19,16 +19,12 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import ml.mckuhei.lava.VoteManager.VoteStatus;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.github.paperspigot.Title;
+
+import java.lang.reflect.Field;
+import java.util.*;
 
 public class Main extends JavaPlugin implements Listener {
 	private static final int DEFAULT_DELAY = 30 * 20,
@@ -39,6 +35,7 @@ public class Main extends JavaPlugin implements Listener {
 	private int size = 64;
 	private int delay = DEFAULT_DELAY, counter, voteCounter;
 	private VoteManager voteManager;
+	private KitManager kitManager;
 
 	static {
 		Field[] fields = Material.class.getDeclaredFields();
@@ -72,6 +69,7 @@ public class Main extends JavaPlugin implements Listener {
 	public void onEnable() {
 		getServer().getPluginManager().registerEvents(this, this);
 		Bukkit.getScheduler().runTaskTimer(this, this::mainloop, 0, 1);
+		kitManager = new KitManager(this);
 	}
 	
 	private void mainloop() {
@@ -187,6 +185,8 @@ public class Main extends JavaPlugin implements Listener {
 			player.setFoodLevel(20);
 			player.setLevel(0);
 			player.setTotalExperience(0);
+			kitManager.apply(player);
+			player.sendMessage(ChatColor.GREEN + "你的初始装备/加成已发放");
 		}
 	}
 	public void start() {
@@ -214,6 +214,16 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		if(cmd.getName().equals("kit")){
+			if(sender instanceof Player){
+				if(!started){
+					kitManager.openKitMenu((Player) sender);
+				}else {
+					sender.sendMessage(ChatColor.RED+"游戏已开始，你无法选择加成!");
+				}
+				return true;
+			}
+		}
 		if(cmd.getName().equals("lava")) {
 			if(args.length==0) {
 				sender.sendMessage("============岩浆上升============");
@@ -320,14 +330,16 @@ public class Main extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onPlayerDead(PlayerDeathEvent event) {
-		onPlayerDead(event.getEntity());
-		Player player = event.getEntity();
-		Player killerEntity = player.getKiller();
+		if(started){
+			onPlayerDead(event.getEntity());
+			Player player = event.getEntity();
+			Player killerEntity = player.getKiller();
 
-		if(killerEntity != null){
-			ItemStack goldenApple = new ItemStack(Material.GOLDEN_APPLE, 1);
-			killerEntity.getInventory().addItem(goldenApple);
-			killerEntity.sendMessage(ChatColor.GOLD + "你因为击杀" + player.getName() + "获得了一个金苹果！");
+			if(killerEntity != null){
+				ItemStack goldenApple = new ItemStack(Material.GOLDEN_APPLE, 1);
+				killerEntity.getInventory().addItem(goldenApple);
+				killerEntity.sendMessage(ChatColor.GOLD + "你因为击杀" + player.getName() + "获得了一个金苹果！");
+			}
 		}
 	}
 
@@ -349,14 +361,17 @@ public class Main extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
 		if(center != null) {
-			Player player = event.getPlayer();
 			Location loc = player.getLocation().subtract(center);
 			int dist = Math.max(Math.abs(loc.getBlockX()), Math.abs(loc.getBlockZ()));
 			if(dist <= size && loc.getBlockY() > 0) return;
 			player.setGameMode(GameMode.SPECTATOR);
 			player.sendMessage(ChatColor.RED + "游戏已开始，如果你是中途掉线或者游戏刚开始，请找管理员将你的游戏模式改回生存！");
 			player.teleport(center);
+		}else {
+			kitManager.join(player);
+			player.sendMessage(ChatColor.YELLOW + "欢迎加入游戏，输入/kit选择初始装备/加成");
 		}
 	}
 }
