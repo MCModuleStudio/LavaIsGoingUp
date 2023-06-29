@@ -1,7 +1,5 @@
-package ml.mckuhei.lava;
+package org.mcmodule.lava;
 
-import ml.mckuhei.lava.VoteManager.VoteStatus;
-import ml.mckuhei.lava.kit.KitManager;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -22,6 +20,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.github.paperspigot.Title;
+import org.mcmodule.lava.VoteManager.VoteStatus;
+import org.mcmodule.lava.kit.KitManager;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -156,6 +156,7 @@ public class Main extends JavaPlugin implements Listener {
 				new ComponentBuilder("[同意]").color(ChatColor.GREEN).event(new ClickEvent(Action.RUN_COMMAND, "/lavaisgoingup:vote accept")).append(" ").reset()
 				             .append("[拒绝]").color(ChatColor.RED).event(new ClickEvent(Action.RUN_COMMAND, "/lavaisgoingup:vote reject")).create()
 				);
+		player.playSound(player.getLocation(), Sound.NOTE_PLING, 1F, 2F);
 	}
 	
 	public void onDisable() {
@@ -189,6 +190,11 @@ public class Main extends JavaPlugin implements Listener {
 			player.sendMessage(ChatColor.GREEN + "你的初始装备/加成已发放");
 		}
 	}
+	
+	public boolean isGameStarted() {
+		return this.center != null;
+	}
+	
 	public void start() {
 		if(this.center == null) {
 			throw new RuntimeException("未初始化");
@@ -204,7 +210,7 @@ public class Main extends JavaPlugin implements Listener {
 	
 	public void stop() {
 		pause();
-		if(this.center != null) {
+		if(isGameStarted()) {
 			WorldBorder border = this.center.getWorld().getWorldBorder();
 			border.setCenter(new Location(this.center.getWorld(), 0, 0, 0));
 			border.setSize(Integer.MAX_VALUE);
@@ -216,18 +222,17 @@ public class Main extends JavaPlugin implements Listener {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if(cmd.getName().equals("kit")){
 			if(sender instanceof Player){
-				if(!started){
+				if(!isGameStarted()){
 					kitManager.openKitMenu((Player) sender);
-				}else {
-					sender.sendMessage(ChatColor.RED+"游戏已开始，你无法选择加成!");
+				} else {
+					sender.sendMessage(ChatColor.RED + "游戏已开始，你无法选择加成!");
 				}
 				return true;
 			}
 		}
 		if(cmd.getName().equals("lava")) {
-			if(args.length==0) {
+			if(args.length == 0) {
 				sender.sendMessage("============岩浆上升============");
-				sender.sendMessage("作者:Minecraftku_hei");
 				sender.sendMessage("/lava init              - 初始化");
 				sender.sendMessage("/lava start           - 启动");
 				sender.sendMessage("/lava pause          - 暂停");
@@ -237,7 +242,7 @@ public class Main extends JavaPlugin implements Listener {
 				return true;
 			}
 			if(!sender.isOp()) {
-				sender.sendMessage(ChatColor.RED+"你需要op来执行这命令");
+				sender.sendMessage(ChatColor.RED + "你需要op来执行这命令");
 				return true;
 			}
 			switch(args[0]) {
@@ -254,7 +259,7 @@ public class Main extends JavaPlugin implements Listener {
 				try {
 					start();
 				} catch(RuntimeException e) {
-					sender.sendMessage(ChatColor.RED+"启动失败！原因:"+e.getMessage());
+					sender.sendMessage(ChatColor.RED + "启动失败！原因:"+e.getMessage());
 					break;
 				}
 				sender.sendMessage("已启动");
@@ -330,7 +335,7 @@ public class Main extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onPlayerDead(PlayerDeathEvent event) {
-		if(started){
+		if(isGameStarted()){
 			onPlayerDead(event.getEntity());
 			Player player = event.getEntity();
 			Player killerEntity = player.getKiller();

@@ -1,5 +1,5 @@
 name: LavaIsGoingUp
-main: ml.mckuhei.lava.Main
+main: org.mcmodule.lava.Main
 version: 1
 commands:
    lava:

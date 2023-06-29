@@ -1,4 +1,4 @@
-package ml.mckuhei.lava.kit;
+package org.mcmodule.lava.kit;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

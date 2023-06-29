@@ -1,7 +1,5 @@
-package ml.mckuhei.lava.kit;
+package org.mcmodule.lava.kit;
 
-import ml.mckuhei.lava.kit.kits.Speed;
-import ml.mckuhei.lava.kit.kits.SpeedMine;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -12,6 +10,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.mcmodule.lava.kit.kits.Speed;
+import org.mcmodule.lava.kit.kits.SpeedMine;
 
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;

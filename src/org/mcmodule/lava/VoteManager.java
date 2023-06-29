@@ -1,4 +1,4 @@
-package ml.mckuhei.lava;
+package org.mcmodule.lava;
 
 import java.util.HashSet;
 import java.util.List;

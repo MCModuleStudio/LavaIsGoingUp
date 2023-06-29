@@ -1,12 +1,12 @@
-package ml.mckuhei.lava.kit.kits;
+package org.mcmodule.lava.kit.kits;
 
-import ml.mckuhei.lava.kit.Kit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.mcmodule.lava.kit.Kit;
 
 public class SpeedMine implements Kit {
     @Override
