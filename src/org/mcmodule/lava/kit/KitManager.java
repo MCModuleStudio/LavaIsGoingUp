@@ -10,8 +10,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.mcmodule.lava.kit.kits.Speed;
-import org.mcmodule.lava.kit.kits.SpeedMine;
+import org.mcmodule.lava.kit.kits.*;
 
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,13 +25,21 @@ public class KitManager implements Listener {
         kitMap = new ConcurrentHashMap<>();
         playerKits = new ConcurrentHashMap<>();
         regKit(new SpeedMine());
+        regKit(new Velocity());
         regKit(new Speed());
+        regKit(new MaterialPack());
+        regKit(new Phoenix());
+        regKit(new Tank());
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     private void regKit(Kit k){
         this.kitMap.put(index,k);
         index++;
+    }
+
+    public Kit getKit(Player player){
+        return this.playerKits.get(player);
     }
 
     public void join(Player player){

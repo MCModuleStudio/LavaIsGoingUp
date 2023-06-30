@@ -15,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -22,6 +23,8 @@ import org.bukkit.potion.PotionEffectType;
 import org.github.paperspigot.Title;
 import org.mcmodule.lava.VoteManager.VoteStatus;
 import org.mcmodule.lava.kit.KitManager;
+import org.mcmodule.lava.kit.kits.Phoenix;
+import org.mcmodule.lava.kit.kits.Velocity;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -131,6 +134,10 @@ public class Main extends JavaPlugin implements Listener {
 		if (event.getItem().getType() == Material.GOLDEN_APPLE) {
 			player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 15, 1));
 		}
+		if(event.getItem().getType() == Material.MILK_BUCKET){
+			event.setCancelled(true);
+			player.sendMessage(ChatColor.RED + "老铁别喝牛奶了");
+		}
 	}
 	
 	private boolean checkVoteStatus(List<Player> players) {
@@ -164,6 +171,7 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	public void init(Location center) {
+		reborned.clear();
 		Objects.requireNonNull(center).setY(0);
 		center = new Location(center.getWorld(), center.getBlockX(), center.getBlockY(), center.getBlockZ());
 		this.center = center.clone();
@@ -182,12 +190,13 @@ public class Main extends JavaPlugin implements Listener {
 			player.teleport(loc);
 			player.setGameMode(GameMode.SURVIVAL);
 			player.getInventory().clear();
-			player.setHealth(player.getMaxHealth());
+			player.setMaxHealth(20);
 			player.setFoodLevel(20);
 			player.setLevel(0);
 			player.setTotalExperience(0);
 			kitManager.apply(player);
 			player.sendMessage(ChatColor.GREEN + "你的初始装备/加成已发放");
+			player.setHealth(player.getMaxHealth());
 		}
 	}
 	
@@ -332,12 +341,42 @@ public class Main extends JavaPlugin implements Listener {
 		}
 		return new ArrayList<>();
 	}
-	
+
+	private final ArrayList<Player> reborned = new ArrayList<>();
+
+	@EventHandler
+	public void onPlayerDead(PlayerVelocityEvent event) {
+		if(isGameStarted()){
+			Player player = event.getPlayer();
+			if(kitManager.getKit(player) instanceof Velocity){
+				if(player.isSneaking()){
+					event.setCancelled(true);
+				}
+			}
+		}
+	}
 	@EventHandler
 	public void onPlayerDead(PlayerDeathEvent event) {
 		if(isGameStarted()){
-			onPlayerDead(event.getEntity());
 			Player player = event.getEntity();
+			player.getWorld().strikeLightningEffect(player.getLocation());
+			if(kitManager.getKit(player) instanceof Phoenix && !reborned.contains(player)){
+				reborned.add(player);
+				event.setDeathMessage("");
+				event.setKeepInventory(true);
+				event.setKeepLevel(true);
+				player.sendMessage(ChatColor.RED + "你似了，但是由于你的加成效果你被复活了！" + ChatColor.GOLD + "并且获得了抗火效果！");
+				player.setHealth(player.getMaxHealth() / 2f);
+				player.setFoodLevel(20);
+				player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 20 * 60, 0));
+				player.setGameMode(GameMode.SURVIVAL);
+			}else {
+				player.sendTitle(new Title(ChatColor.RED + "你似了!", ChatColor.GOLD + "你将无法重生，现在为旁观者"));
+				player.setHealth(player.getMaxHealth());
+				player.setFoodLevel(20);
+				player.setGameMode(GameMode.SPECTATOR);
+			}
+
 			Player killerEntity = player.getKiller();
 
 			if(killerEntity != null){
@@ -355,15 +394,7 @@ public class Main extends JavaPlugin implements Listener {
 //			CraftPlayer player = ((CraftPlayer) event.getEntity());
 //		}
 //	}
-	
-	public void onPlayerDead(Player player) {
-		player.getWorld().strikeLightningEffect(player.getLocation());
-		player.sendTitle(new Title(ChatColor.RED + "你似了!", ChatColor.GOLD + "你将无法重生，现在为旁观者"));
-		player.setHealth(20);
-		player.setFoodLevel(20);
-		player.setGameMode(GameMode.SPECTATOR);
-	}
-	
+
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
