@@ -25,10 +25,8 @@ public class KitManager implements Listener {
     public KitManager(JavaPlugin plugin) {
         kitMap = new ConcurrentHashMap<>();
         playerKits = new ConcurrentHashMap<>();
-
         regKit(new SpeedMine());
         regKit(new Speed());
-
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 

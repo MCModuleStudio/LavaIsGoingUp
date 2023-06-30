@@ -182,7 +182,7 @@ public class Main extends JavaPlugin implements Listener {
 			player.teleport(loc);
 			player.setGameMode(GameMode.SURVIVAL);
 			player.getInventory().clear();
-			player.setHealth(20D);
+			player.setHealth(player.getMaxHealth());
 			player.setFoodLevel(20);
 			player.setLevel(0);
 			player.setTotalExperience(0);
