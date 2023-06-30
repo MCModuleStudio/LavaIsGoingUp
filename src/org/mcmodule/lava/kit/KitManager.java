@@ -30,6 +30,7 @@ public class KitManager implements Listener {
         regKit(new MaterialPack());
         regKit(new Phoenix());
         regKit(new Tank());
+        regKit(new Assassin());
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 

@@ -23,6 +23,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.github.paperspigot.Title;
 import org.mcmodule.lava.VoteManager.VoteStatus;
 import org.mcmodule.lava.kit.KitManager;
+import org.mcmodule.lava.kit.kits.Assassin;
 import org.mcmodule.lava.kit.kits.Phoenix;
 import org.mcmodule.lava.kit.kits.Velocity;
 
@@ -187,6 +188,7 @@ public class Main extends JavaPlugin implements Listener {
 				zOff = rand.nextInt(size) - rand.nextInt(size);
 			Location loc = center.clone().add(xOff + .5, 0, zOff + .5);
 			loc.setY(world.getHighestBlockYAt(loc) + 1);
+			player.getActivePotionEffects().clear();
 			player.teleport(loc);
 			player.setGameMode(GameMode.SURVIVAL);
 			player.getInventory().clear();
@@ -380,9 +382,14 @@ public class Main extends JavaPlugin implements Listener {
 			Player killerEntity = player.getKiller();
 
 			if(killerEntity != null){
-				ItemStack goldenApple = new ItemStack(Material.GOLDEN_APPLE, 1);
-				killerEntity.getInventory().addItem(goldenApple);
-				killerEntity.sendMessage(ChatColor.GOLD + "你因为击杀" + player.getName() + "获得了一个金苹果！");
+				if(kitManager.getKit(killerEntity) instanceof Assassin) {
+					player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 60, 3));
+					killerEntity.sendMessage(ChatColor.GOLD + "你因为击杀" + player.getName() + "获得了药水效果！");
+				}else {
+					ItemStack goldenApple = new ItemStack(Material.GOLDEN_APPLE, 1);
+					killerEntity.getInventory().addItem(goldenApple);
+					killerEntity.sendMessage(ChatColor.GOLD + "你因为击杀" + player.getName() + "获得了一个金苹果！");
+				}
 			}
 		}
 	}

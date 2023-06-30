@@ -20,7 +20,7 @@ public class Phoenix implements Kit {
     public String[] getDescription() {
         return new String[]{
                 ChatColor.GREEN + "你可以在死亡后立即原地复活一次",
-                ChatColor.GREEN + "复活后获得半分钟抗火效果"
+                ChatColor.GREEN + "复活后获得一分钟抗火效果"
         };
     }
 
