@@ -405,6 +405,7 @@ public class Main extends JavaPlugin implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
+		kitManager.join(player);
 		if(center != null) {
 			Location loc = player.getLocation().subtract(center);
 			int dist = Math.max(Math.abs(loc.getBlockX()), Math.abs(loc.getBlockZ()));
@@ -413,7 +414,7 @@ public class Main extends JavaPlugin implements Listener {
 			player.sendMessage(ChatColor.RED + "游戏已开始，如果你是中途掉线或者游戏刚开始，请找管理员将你的游戏模式改回生存！");
 			player.teleport(center);
 		}else {
-			kitManager.join(player);
+
 			player.sendMessage(ChatColor.YELLOW + "欢迎加入游戏，输入/kit选择初始装备/加成");
 		}
 	}
